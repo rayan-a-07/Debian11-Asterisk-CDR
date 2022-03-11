@@ -1,0 +1,73 @@
+Installation des paquets
+apt -y install odbc-mariadb unixodbc unixodbc-dev odbcinst
+
+On vérifie que le driver est bien installé avec odbcinst -q -d -n
+
+
+mysql -u root -p
+
+CREATE DATABASE asteriskcdrdb;
+
+GRANT ALL PRIVILEGES ON asteriskcdrdb.* TO  asteriskcdr@localhost  IDENTIFIED BY 'passer';
+
+use asteriskcdrdb;
+
+
+CREATE TABLE cdr ( 
+        calldate datetime NOT NULL, 
+        clid varchar(80) NOT NULL default '', 
+        src varchar(80) NOT NULL default '', 
+        dst varchar(80) NOT NULL default '', 
+        dcontext varchar(80) NOT NULL default '', 
+        channel varchar(80) NOT NULL default '', 
+        dstchannel varchar(80) NOT NULL default '', 
+        lastapp varchar(80) NOT NULL default '', 
+        lastdata varchar(80) NOT NULL default '', 
+        duration int(11) NOT NULL default '0', 
+        billsec int(11) NOT NULL default '0', 
+        disposition varchar(45) NOT NULL default '', 
+        amaflags int(11) NOT NULL default '0', 
+        uniqueid varchar(32) NOT NULL default '', 
+);
+
+
+/etc/odbc.ini
+[asterisk]
+Description = MySQL connection to asterisk database
+Driver = MariaDB Unicode
+Database = asteriskcdrdb
+Server = localhost
+User = root
+Password = passer
+Port = 3306
+
+
+/etc/asterisk/cdr_adaptive_odbc.conf
+
+32: [adaptative_connection]
+33: connection=asterisk
+34: table=cdr
+35: alias start => calldate
+
+
+/etc/asterisk/res_odbc.conf
+[asterisk]
+20: enabled => yes
+24: dsn => asterisk
+27: username => asteriskcdr
+31: password => passer
+34: pre-connect => yes
+
+
+/etc/asterisk/cdr.conf
+[general]
+enabled => yes
+dsn => asterisk
+pre-connect =>
+
+
+systemctl restart asterisk
+asterisk -rvv
+CLI> odbc show asterisk
+
+Le nombre de connexions actives devra être à 1 sur 1
