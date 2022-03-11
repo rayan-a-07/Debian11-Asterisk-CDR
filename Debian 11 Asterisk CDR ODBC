@@ -37,7 +37,7 @@ Description = MySQL connection to asterisk database
 Driver = MariaDB Unicode
 Database = asteriskcdrdb
 Server = localhost
-User = root
+User = asteriskcdr
 Password = passer
 Port = 3306
 
